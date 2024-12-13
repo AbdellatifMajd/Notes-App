@@ -31,6 +31,7 @@ const NoteCard = (props) => {
           <MdDelete
             className="icon-btn hover:text-red-600"
             onClick={props.onDelete}
+            
           />
         </div>
       </div>

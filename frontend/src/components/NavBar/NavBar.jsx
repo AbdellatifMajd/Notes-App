@@ -6,9 +6,16 @@ import SearchBar from "../SearchBar/SearchBar";
 // NavBar.jsx :
 const NavBar = (props) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const handleSearch = () => {};
+  const handleSearch = () => {
+    if(searchQuery){
+      props.onSearchNote(searchQuery)
+    }
+  };
+
+
   const handleClearSearch = () => {
     setSearchQuery("");
+    props.handleClearSearch();
   };
 
   const navigate = useNavigate();

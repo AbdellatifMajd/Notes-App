@@ -7,17 +7,47 @@ import AddEditNote from "./AddEditNote";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosinstance";
+import Toast from "../../components/ToastMessage/Toast";
+
 const Home = () => {
   const [openAddEditModal, setopenAddEditModal] = useState({
     isShown: false,
     type: "add",
     data: null,
   });
-  const onClose = () => {};
+  const [showToastMsg, setShowToastMsg] = useState({
+    isShown: false, 
+    message:"",
+    type: "add"
+  })
 
 
   const [userInfos, setUserInfos] = useState([]); 
   const [allNotes, setAllNotes] = useState([]);
+  const [isSearch, setIsSearch] = useState(false); 
+
+
+
+  const handleShowToastMsg = (msg, type) => {
+    setShowToastMsg({
+      isShown: true, 
+      message: msg, 
+      type: type
+    })
+  }
+
+  const handleCloseToast = () => {
+    setShowToastMsg({
+      isShown: false, 
+      message: ""
+    })
+  }
+
+  const onClose = () => {};
+
+
+
+
   const navigate = useNavigate() 
 
   const handleEdit = (noteDetails) => {
@@ -25,7 +55,6 @@ const Home = () => {
   }
 
   // get user infos 
-  //Home.jsx : 
   const GetUserInfos = async()=>{
     
     try{
@@ -35,7 +64,7 @@ const Home = () => {
       }
     }
     catch(error){
-      if(error.response.status === 401){
+      if(error.response.status=== 401){
         localStorage.clear(); 
         navigate("/login") 
       }
@@ -59,6 +88,67 @@ const Home = () => {
 
 
 
+
+    //delete Note API integration 
+const handleDelete = async(note)=>{
+  const noteId = note._id ;
+  try{
+    const response = await axiosInstance.delete("/delete-note/" + noteId) 
+    if(response.data && !response.data.error){
+      GetAllNotes() 
+      handleShowToastMsg("Note Deleted Successfully.", "delete")
+    }
+  }
+  catch(error){
+    if(error.response && error.response.data && error.response.data.message){
+      console.log("An unexpected error occured. Please try again.")
+    }
+  }
+}
+
+
+// search for a note API Integration 
+const onSearchNote = async(query) => {
+  try{
+    const response = await axiosInstance.get("/search-notes/",{
+      params: {query},
+    })
+    if(response.data && response.data.notes){
+      setIsSearch(true) ;
+      setAllNotes(response.data.notes)
+    }
+  }
+  catch(error){
+    console.log(error)
+  }
+}
+
+
+
+// note is pinned API Integration 
+const updateIsPinned = async (noteData) => {
+  const noteId = noteData._id;
+
+  try {
+    const updatedPinnedStatus = !noteData.isPinned;
+    const response = await axiosInstance.put("/update-note-pinned/" + noteId, { isPinned: updatedPinnedStatus });
+
+    if (response.data && response.data.note) {
+      GetAllNotes(response.data);
+      const message = updatedPinnedStatus ? "Note Pinned Successfully." : "Note Unpinned Successfully.";
+      handleShowToastMsg(message);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+const handleClearSearch = () => {
+  setIsSearch(false)
+  GetAllNotes()
+}
+
     useEffect(() => {
       GetUserInfos();
       GetAllNotes();
@@ -66,7 +156,7 @@ const Home = () => {
 
   return (
     <>
-      <NavBar userInfos={userInfos} />
+      <NavBar userInfos={userInfos} onSearchNote={onSearchNote} handleClearSearch={handleClearSearch}/>
 
       <div className="container mx-auto">
         <div className="grid grid-cols-3 gap-4 mt-8">
@@ -78,8 +168,8 @@ const Home = () => {
             tags={note.tags}
             isPinned={note.isPinned}
             onEdit={() => {handleEdit(note)}}
-            onDelete={() => {}}
-            onPinNote={() => {}}
+            onDelete={() => {handleDelete(note)}}
+            onPinNote={() => {updateIsPinned(note)}}
           />
           ))}
 
@@ -119,8 +209,12 @@ const Home = () => {
             );
           }}
           GetAllNotes={GetAllNotes}
+          handleShowToastMsg={handleShowToastMsg}
         />
       </Modal>
+
+          <Toast isShown={showToastMsg.isShown} message={showToastMsg.message} type={showToastMsg.type} onClose={handleCloseToast}/>
+
     </>
   );
 };

@@ -68,8 +68,8 @@ const SignUp =  () => {
 
   return (
   <div>
-  <NavBar />
-
+<div className="bg-white flex items-center justify-between px-6 py-2 drop-shadow">
+<h2 className="text-xl font-medium text-black py-2">Notes</h2></div>
   <div className="flex items-center justify-center mt-28">
     <div className="w-96 border rounded bg-white px-7 py-10">
       <form action="" onSubmit={handleSignUp}>

@@ -16,6 +16,7 @@ const addNewNote = async () => {
     if(response.data && response.data.note){
       props.GetAllNotes(response.data)
       props.onClose();
+      props.handleShowToastMsg("Note Added Successfully.")
     } 
 
 
@@ -37,6 +38,7 @@ const editNote = async () => {
     if(response.data && response.data.note){
       props.GetAllNotes(); 
       props.onClose();
+      props.handleShowToastMsg("Note Updated Successfully.")
     }
   }
   catch(error){
@@ -46,6 +48,9 @@ const editNote = async () => {
   }
 
 }
+
+
+
 
 
 
